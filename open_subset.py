@@ -11,8 +11,8 @@ def open_and_subset(file, type="simple", source="LC"):
 		return data
 	elif type == "feature_only":
 		return subset_by_feature(data, source)
-	elif type == "through_transform"
-		data = subset_by_features(data, source)
+	elif type == "through_transform":
+		data = subset_by_feature(data, source)
 		return transform(data)
 	else:
 		return "ERROR: unknown type used"
@@ -45,9 +45,10 @@ def transform(db, source="LC"):
 		# transform 'int_rate' into continuous numeric values
 		db['int_rate'] = db['int_rate'].apply(to_num)
 		# transform 'emp_title' into whether or not employer's title is listed
+	elif source == "P":
+		return "data transform not yet made for Prosper"
 
-
-		return db.dropna(axis=0)
+	return db
 
 
 
