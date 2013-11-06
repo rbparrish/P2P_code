@@ -57,9 +57,10 @@ def LC_status_transform(data_b):
     # group Default and Charged Off together
     db[ls]= db[ls].apply(replace_chTOde)
     # get rid of unwanted variables
-    db_1 = db[db['loan_status'] == 'Fully Paid']
-    db_2 = db[db['loan_status'] == 'Default']
-    db = pd.concat([db_1, db_2])
+    ##b_1 = db[db['loan_status'] == 'Fully Paid']
+    ##db_2 = db[db['loan_status'] == 'Default']
+    ##db = pd.concat([db_1, db_2])
+    db = db[db[ls].isin(['Fully Paid', 'Default'])]
     return db
 
 
