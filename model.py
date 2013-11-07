@@ -70,18 +70,18 @@ class Classifier:
 		total_notes = len(true_results)
 		print "Total Fully Paid in Grade: " + str(total_paid)
 		print "Total Notes in Grade: " + str(total_notes)
-		print "Rate if fully invest: " + str(float(total_paid)/total_notes)
+		print "None-default rate if fully invest: " + str(float(total_paid)/total_notes)
 		# information on performance of the model
 		pr = self.clf.predict(features)
 		total_investments_by_prediction = sum(pr)
-		print "Total invested in by model: " + str(total_investments_by_prediction)
+		print "Total number invested by model: " + str(total_investments_by_prediction)
 		################
 		ac = true_results.values
 		correct = 0
 		for i in range(len(pr)):
 			if (pr[i] == 1) and (ac[i] == 1):
 				correct += 1
-		print "precent not-defaulted by model: " + str(float(correct)/sum(pr))
+		print "non-default rate invested by model: " + str(float(correct)/sum(pr))
 		self.display_ROC(pr, ac)
 
 
