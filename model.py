@@ -53,7 +53,7 @@ class Classifier:
 				dt = self.tst_dt[self.tst_dt['grade_'+letter] == 1]
 				tst_pred = dt['status_Fully Paid']
 				tst_feat = dt
-				del tst_feat['status_Fully Paid']
+				del tst_feat['status_Fully Paid'] # change to remove using .drop : see http://stackoverflow.com/questions/13411544/delete-column-from-pandas-dataframe
 				print "Model performance on notes of grade " + letter
 				self.single_analysis((self.scaler.transform(tst_feat)), tst_pred)
 		else:
@@ -84,10 +84,13 @@ class Classifier:
 		print "non-default rate invested by model: " + str(float(correct)/sum(pr))
 		self.display_ROC(pr, ac)
 
-
-
 	def display_ROC(self, pr, ac):
+		pdb.set_trace()
 		##### make ROC graph for the result #####
+		if sum(pr) == len(pr):
+			print "NO ROC : model invested in all notes"
+			print "------------------------------------"
+			return None
 		from sklearn.metrics import roc_curve, auc
 		fpr, tpr, thresholds = roc_curve(pr, ac)
 		roc_auc = auc(fpr, tpr)

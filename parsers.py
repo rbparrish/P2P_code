@@ -1,4 +1,5 @@
-import datetime, re
+from datetime import datetime
+import re
 import numpy as np
 import pandas as pd
 
@@ -46,9 +47,17 @@ def categorical_transform(data_b, column_name, pref=None):
     return db
 
 
-def parse_date(x, format='%Y-m-d'):
+def parse_date(x, format='%Y-%m-%d'):
     d = datetime.strptime(x, format)
     return d
+
+def yr_mm_grouping(x):
+    # NOTE: x must be a timestamp object
+    month = str(x.month)
+    # add 0 to the beginning of single digit months
+    if len(month) is 1:
+        month = "0" + month
+    return str(x.year) + "-" + month
 
 
 def LC_status_transform(data_b):

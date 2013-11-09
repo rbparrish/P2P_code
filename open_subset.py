@@ -36,35 +36,51 @@ def subset_by_feature(db, source="LC"):
 def transform(db, source="LC"):
 
 	if source == "LC":
-		##### complete transformation
-		# change title to title_length (NaN to 0)
-		db['title'] = db['title'].fillna("").apply(len)
-		# remove all titles over len(40); seems like not allowed
-		db = db[db['title'] <= 40]
-		# change desc to desc_length (NaN to 0)
-		db['desc'] = db['desc'].fillna("").apply(len)
-		# for purpose, NaN to "not_given"
-		db['purpose'] = db['purpose'].fillna('not_given')
+		##### transformations to complete before droping NA #####
+		if 'title' in db.columns:
+			# change title to title_length (NaN to 0)
+			db['title'] = db['title'].fillna("").apply(len)
+			# remove all titles over len(40); seems like not allowed
+			db = db[db['title'] <= 40]
+		if 'desc' in db.columns:
+			# change desc to desc_length (NaN to 0)
+			db['desc'] = db['desc'].fillna("").apply(len)
+		if 'purpose' in db.columns:
+			# for purpose, NaN to "not_given"
+			db['purpose'] = db['purpose'].fillna('not_given')
 		# remove remaining NaN
 		db = db.dropna(axis=0)
-		##### complete parsing 
-		# transform 'term' into continuous numeric values
-		db['term'] = db['term'].apply(pa.to_num)
-		# transform 'int_rate' into continuous numeric values
-		db['int_rate'] = db['int_rate'].apply(pa.to_num)
-		# remove all with income over 200000 (outliers)
-		db = db[db['annual_inc'] <= 150000]
-		# make number of years working into continuous
-		db['emp_length'] = db['emp_length'].apply(pa.parse_employment_years)
-		# change 'is_inc_v' to numerical version of T/F
-		db['is_inc_v'] = db['is_inc_v'].apply(pa.binary_true_false)
+		##### transformations to complete after droping NA #####
+		if 'term' in db.columns:
+			# transform 'term' into continuous numeric values
+			db['term'] = db['term'].apply(pa.to_num)
+		if 'int_rate' in db.columns:
+			# transform 'int_rate' into continuous numeric values
+			db['int_rate'] = db['int_rate'].apply(pa.to_num)
+		if 'annual_inc' in db.columns:
+			# remove all with income over 200000 (outliers)
+			db = db[db['annual_inc'] <= 150000]
+		if 'emp_length' in db.columns:
+			# make number of years working into continuous
+			db['emp_length'] = db['emp_length'].apply(pa.parse_employment_years)
+		if 'is_inc_v' in db.columns:
+			# change 'is_inc_v' to numerical version of T/F
+			db['is_inc_v'] = db['is_inc_v'].apply(pa.binary_true_false)
+		if 'exp_d' in db.columns:
+			db['exp_d'] = db['exp_d'].apply(pa.parse_date)
+		if 'last_pymnt_d' in db.columns:
+			db['last_pymnt_d'] = db['last_pymnt_d'].apply(pa.parse_date)
 		# change categorical variables into dummy varialbes
-		db = pa.categorical_transform(db, 'home_ownership', 'home_own')
-		db = pa.categorical_transform(db, 'purpose')
-		db = pa.categorical_transform(db, 'grade')
-		# transoform loan_status (variable to predict)
-		db = pa.LC_status_transform(db)
-		db = pa.categorical_transform(db, 'loan_status', 'status')
+		if 'home_ownership' in db.columns:
+			db = pa.categorical_transform(db, 'home_ownership', 'home_own')
+		if 'purpose' in db.columns:
+			db = pa.categorical_transform(db, 'purpose')
+		#if 'grade' in db.columns:
+		#	db = pa.categorical_transform(db, 'grade')
+		#if 'loan_status' in db.columns:
+		#	# transoform loan_status (variable to predict)
+		#	db = pa.LC_status_transform(db)
+		#	db = pa.categorical_transform(db, 'loan_status', 'status')
 	else:
 		return "Prosper transformations not yet complete"
 		# TO DO - how do I send up an excemption instead?

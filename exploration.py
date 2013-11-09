@@ -12,6 +12,9 @@ def check_types(db):
   	return ans_set
 
 
+
+
+
 '''
 ####################### SOME DATA VISUALIZATION EXAMPLES ###############
 
