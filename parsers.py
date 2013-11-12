@@ -63,17 +63,23 @@ def yr_mm_grouping(x):
 def LC_status_transform(data_b):
     db = data_b.copy()
     ls = "loan_status"
+    print "database length: " + str(len(db))
     # group Default and Charged Off together
-    db[ls]= db[ls].apply(replace_chTOde)
+    db[ls] = db[ls].apply(replace_chTOde)
+    db[ls] = db[ls].apply(replace_curTOfull)
     # get rid of unwanted variables
-    ##b_1 = db[db['loan_status'] == 'Fully Paid']
-    ##db_2 = db[db['loan_status'] == 'Default']
-    ##db = pd.concat([db_1, db_2])
     db = db[db[ls].isin(['Fully Paid', 'Default'])]
+    print "database length: " + str(len(db))
     return db
 
 
 def replace_chTOde(x):
     if x == "Charged Off":
         return "Default"
+    return x
+
+
+def replace_curTOfull(x):
+    if x == "Current":
+        return "Fully Paid"
     return x

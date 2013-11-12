@@ -20,9 +20,10 @@ class Classifier:
 		print "ready to open file. Run .open_file().  Type options: simple, feature_subset, transform"
 
 	# open 
-	def open_file(self):
-		d = op.open_and_process('../Raw_Data/LendingClub/LoanStats3a.csv', 'transform')
+	def open_file(self, file_location):
+		d = op.open_and_process(file_location, 'transform', 'model', 'train')
 		del d['status_Default']
+		del d['issue_d']
 		self.data = d
 		print "run .assign_to_groups()"
 
@@ -31,7 +32,7 @@ class Classifier:
 		self.pred = self.data['status_Fully Paid']
 
 		# assign each to bulk groups
-		n = 15000
+		n = 13000
 		self.tr_feat = self.data[:n]
 		del self.tr_feat['status_Fully Paid']
 		self.tr_pred = self.pred[:n]
@@ -85,7 +86,6 @@ class Classifier:
 		self.display_ROC(pr, ac)
 
 	def display_ROC(self, pr, ac):
-		pdb.set_trace()
 		##### make ROC graph for the result #####
 		if sum(pr) == len(pr):
 			print "NO ROC : model invested in all notes"
@@ -105,6 +105,15 @@ class Classifier:
 		plt.title('Receiver operating characteristic example')
 		plt.legend(loc="lower right")
 		plt.show()	
+
+	def single_custom_analysis(self, features):
+		prepd_feat = self.scaler.transform(features)
+		return self.clf.predict_proba(prepd_feat)
+		#predict_scores = predict_proba(prepd_feat)
+		#results = []
+		#for each in predict_
+
+
 
 
 
