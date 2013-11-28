@@ -3,6 +3,8 @@ import re
 import numpy as np
 import pandas as pd
 
+import pdb
+
 
 def to_num(x):
     try:
@@ -69,17 +71,55 @@ def LC_status_transform(data_b):
     db[ls] = db[ls].apply(replace_curTOfull)
     # get rid of unwanted variables
     db = db[db[ls].isin(['Fully Paid', 'Default'])]
+    print "database length after LC_status_transform: " + str(len(db))
+    return db
+
+def LC_status_transform_new(data_b):
+    db = data_b.copy()
+    ls = "loan_status"
     print "database length: " + str(len(db))
+    # group Default and Charged Off together
+    db[ls] = db[ls].apply(replace_to_poor_standing)
+    db[ls] = db[ls].apply(replace_to_good_standing)
+    # get rid of unwanted variables
+    db = db[db[ls].isin(['in_good_standing', 'in_poor_standing'])]
+    db = categorical_transform(db, 'loan_status', 'status')
+    del db['status_in_poor_standing']
+    print "database length after LC_status_transform: " + str(len(db))
     return db
 
 
-def replace_chTOde(x):
-    if x == "Charged Off":
-        return "Default"
+def replace_to_poor_standing(x):
+    poor_standing_list = [
+        "Charged Off",
+        "Default",
+        "Late (16-30 days)",
+        "Late (31-120 days)",
+        "Does not meet the credit policy.  Status:Charged Off",
+        "Does not meet the credit policy.  Status:Late (16-30 days)",
+        "Does not meet the credit policy.  Status:Late (31-120 days)"
+        ]
+    if x in poor_standing_list:
+        return "in_poor_standing"
     return x
 
 
-def replace_curTOfull(x):
-    if x == "Current":
-        return "Fully Paid"
+def replace_to_good_standing(x):
+    good_standing_list = [
+        "Current",
+        "Fully Paid",
+        "In Grace Period",
+        "Does not meet the credit policy.  Status:Current",
+        "Does not meet the credit policy.  Status:Fully Paid",
+        "Does not meet the credit policy.  Status:In Grace Period"
+        ]
+    if x in good_standing_list:
+        return "in_good_standing"
     return x
+
+
+def replace_mortTOown(x):
+    if x == "MORTGAGE":
+        return "OWN"
+    return x
+

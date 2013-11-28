@@ -40,28 +40,23 @@ class Classifier:
 
 	def prep_data(self, file_location):
 		# open dataset (NOTE: date for training set is set in 'op')
-		self.data = op.open_and_process(file_location, 'transform', 'model', 'train')
+		self.data = op.open_and_process(file_location, 'transform', 'model2')
 
-		n = 13000
 		#self.tr_feat = self.data[:n]
 		#del self.tr_feat['status_Fully Paid']
 		#self.tr_pred = self.pred[:n]
 
-
-		self.training_data = self.data
-		####
-		self.training_data = self.training_data[:n]
-		# delete unneeded columns
-		del self.training_data['status_Default']
+		# separate by issue date (only train using data from before issue date X)
+		self.training_data = self.data[self.data['issue_d'] < pa.parse_date("2011-01-01")]
+		# delete issue date column (no longer needed)
 		del self.training_data['issue_d']
-
+		print self.training_data.columns
 		# separate predictors into it's own dataset
-		self.predictors = self.training_data['status_Fully Paid']
-		###
-		self.predictors = self.predictors[:n]
+		self.predictors = self.training_data['status_in_good_standing']
+
 		# separate features from original training dataset
 		self.training_features = self.training_data
-		del self.training_features['status_Fully Paid']
+		del self.training_features['status_in_good_standing']
 
 	def scale_data(self):
 		print "scaling data"
@@ -82,26 +77,31 @@ class Classifier:
 	def create_full_analysis_dataset(self, file_location):
 		##### RUN TESTING DATASET THROUGH PREDICTIVE MODEL #####
 		# open dataset (NOTE: date for analysis set is set in 'op')
-		print "running test dataset through predictive model"
-		test_data = op.open_and_process(file_location, 'transform', 'model', 'test2')
-		del test_data['status_Fully Paid']
-		del test_data['status_Default']
+		self.t_data = op.open_and_process(file_location, 'transform', 'model2')
+		print "PREPARING & RUNNING TEST DATASET THROUGH PREDICTIVE MODELS"
+		test_data = self.t_data[self.t_data['issue_d'] >= pa.parse_date("2011-01-01")]
+		test_data = test_data[test_data['issue_d'] <= "2011-12-31"]
+		# delete unneeded columns
+		del test_data['status_in_good_standing']
 		del test_data['issue_d']
 		scaled_test_data = self.scaler.transform(test_data)
-		# get lineary regression prediction data
+		# get lineary regression prediction data (weights)
 		lr_prediction_weights = self.lr_clf.decision_function(scaled_test_data)
 		# get random forrest prediction data
 		rf_predictions = self.rndm_forest.predict(scaled_test_data)
 
-		print "creating analysis dataframe"
+		print "CREATING ANALYSIS DATAFRAME"
 		##### LINK PREDICTION WEIGHTS WITH DATA_TABLE USED FOR ANALYSIS #####
-		analysis_data = op.open_and_process(file_location, 'transform', 'analysis')
+		self.a_data = op.open_and_process(file_location, 'transform', 'analysis')
+		
+		analysis_data = self.a_data
 		# only use where index matches those from test_dataset
 		analysis_data = analysis_data.loc[test_data.index]
+		print "months included in test data: " + str(set(analysis_data['yy-mm_start_date']))
 
 		analysis_data['lin_reg_weights'] = lr_prediction_weights
 		analysis_data['rndm_forrest_predictions'] = rf_predictions
-		analysis_data = analysis_data.dropna(axis=0)
+		####analysis_data = analysis_data.dropna(axis=0)
 
 		# saving for problem sovling
 		print "ANALYSIS COMPLETE"

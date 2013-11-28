@@ -116,5 +116,13 @@ class Classifier:
 		#for each in predict_
 
 
+# shuffle and split training and test sets
+X, y = shuffle(X, y, random_state=random_state)
+half = int(n_samples / 2)
+X_train, X_test = X[:half], X[half:]
+y_train, y_test = y[:half], y[half:]
 
+# Run classifier
+classifier = svm.SVC(kernel='linear', probability=True)
+probas_ = classifier.fit(X_train, y_train).predict_proba(X_test)
 
